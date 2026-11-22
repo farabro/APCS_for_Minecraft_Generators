@@ -5,10 +5,20 @@ _G.tags.gen.ntm_gas_turbine = {
 _G.drivers.gen.ntm_gas_turbine = {}
 
 function _G.drivers.gen.ntm_gas_turbine.get_data(element)
-	_G.tags.gen.ntm_gas_turbine.data[element].fluid, _G.tags.gen.ntm_gas_turbine.data[element].max_fluid = _G.tags.gen.ntm_gas_turbine.elements[element].getFluid()
+	local state
+	
+	-- Get CCGT data
+	_G.tags.gen.ntm_gas_turbine.data[element].throttle,
+		state,
+		_G.tags.gen.ntm_gas_turbine.data[element].fluid,
+		_G.tags.gen.ntm_gas_turbine.data[element].max_fluid
+		
+		= _G.tags.gen.ntm_gas_turbine.elements[element].getInfo()
+	
 	_G.tags.gen.ntm_gas_turbine.data[element].fluid_type = _G.tags.gen.ntm_gas_turbine.elements[element].getType()
-	_G.tags.gen.ntm_gas_turbine.data[element].working = _G.tags.gen.ntm_gas_turbine.elements[element].getState() ~= 0 or true and false
-	_G.tags.gen.ntm_gas_turbine.data[element].throttle = _G.tags.gen.ntm_gas_turbine.elements[element].getThrottle()
+	
+	-- Parse data (if need)
+	_G.tags.gen.ntm_gas_turbine.data[element].working = state ~= 0 or true and false
 end
 
 function _G.drivers.gen.ntm_gas_turbine.set_throttle(element, throttle)

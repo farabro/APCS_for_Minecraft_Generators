@@ -5,10 +5,21 @@ _G.tags.gen.ntm_combustion_engine = {
 _G.drivers.gen.ntm_combustion_engine = {}
 
 function _G.drivers.gen.ntm_combustion_engine.get_data(element)
-	_G.tags.gen.ntm_combustion_engine.data[element].fluid, _G.tags.gen.ntm_combustion_engine.data[element].max_fluid = _G.tags.gen.ntm_combustion_engine.elements[element].getFluid()
-	_G.tags.gen.ntm_combustion_engine.data[element].fluid_type = _G.tags.gen.ntm_combustion_engine.elements[element].getType()
-	_G.tags.gen.ntm_combustion_engine.data[element].working = _G.tags.gen.ntm_combustion_engine.elements[element].getState()
-	_G.tags.gen.ntm_combustion_engine.data[element].throttle = _G.tags.gen.ntm_combustion_engine.elements[element].getThrottle()*10//3
+	local throttle
+	
+	-- Get gen data
+	throttle,
+		_G.tags.gen.ntm_combustion_engine.data[element].working,
+		_,
+		_,
+		_G.tags.gen.ntm_combustion_engine.data[element].fluid,
+		_G.tags.gen.ntm_combustion_engine.data[element].max_fluid,
+		_G.tags.gen.ntm_combustion_engine.data[element].fluid_type
+		
+		= _G.tags.gen.ntm_combustion_engine.elements[element].getInfo()
+	
+	-- Parse data (if need)
+	_G.tags.gen.ntm_combustion_engine.data[element].throttle = throttle*10//3
 end
 
 function _G.drivers.gen.ntm_combustion_engine.set_throttle(element, throttle)

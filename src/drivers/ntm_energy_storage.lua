@@ -5,8 +5,16 @@ _G.tags.ES.ntm_energy_storage = {
 _G.drivers.ES.ntm_energy_storage = {}
 
 function _G.drivers.ES.ntm_energy_storage.get_data(element)
-	local power, max_power = _G.tags.ES.ntm_energy_storage.elements[element].getEnergyInfo()
-	-- HE to RF
+	local power
+	local max_power
+	
+	-- Get ES data
+	power,
+		max_power
+		
+		= _G.tags.ES.ntm_energy_storage.elements[element].getEnergyInfo()
+	
+	-- Parse data
 	_G.tags.ES.ntm_energy_storage.data[element].power = power*4
 	_G.tags.ES.ntm_energy_storage.data[element].max_power = max_power*4
 end

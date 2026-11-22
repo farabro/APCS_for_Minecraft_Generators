@@ -1,8 +1,9 @@
 # v2.1.0
 
 ## Fixed
-- Fixed error at tags doc, where ES power measured in RF was fluid
-- Fixed error at [config](/src/core/config.lua), where "O" key had named "P"
+- Fixed an error at tags doc, where ES power measured in RF was fluid
+- Fixed an error at [config](/src/core/config.lua), where "O" key had named "P"
+- Fixed an error, then at [config](/src/core/config.lua) `reboot_with_err = true`, but it has been ingnored
 
 ## Added
 - Added [Updates Log](/update-log.md)
@@ -16,5 +17,6 @@
 - Now, Links in English lang.
 - Now, Documentation has version in English lang
 - Now, you can press key, that in English QWERTY has need value (if you press "У" APCS will understand it how "E")
+- Calls to get gen/ES/FS data has been optimized
 
 Count of Cup Coffee has been drunk: 10
