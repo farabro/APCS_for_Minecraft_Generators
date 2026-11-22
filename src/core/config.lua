@@ -19,8 +19,36 @@ _G.config = {
 	reboot_with_err = true,
 	time_sleep = 2.5,
 	
-	output = false,
-	lang = 1,
+	
+	logging = {
+		enabled = false,
+		log_lvl = 2,
+		
+		log_devices = {},
+		log_directory = {
+			enabled = true,
+			directories = {"logs"},
+		},
+		log_name = "gen_APCS.log",
+		max_log_size = 0,
+		
+		syslog_servers_addrs = {},
+		
+		log_lvls_names = {
+			"DBG",
+			"INF",
+			"WRN",
+			"CRT",
+			"ERR",
+		},
+	},
+	
+	
+	-- SCADA
+	
+	
+	output_to_display = false, -- Not currently in use
+	lang = 1, -- Neither does it
 	
 	su = {"FaraBro"},
 	users_can_use = {

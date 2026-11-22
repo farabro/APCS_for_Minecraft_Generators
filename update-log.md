@@ -6,6 +6,7 @@
 - Fixed an error, then at [config](/src/core/config.lua) `reboot_with_err = true`, but it has been ingnored
 
 ## Added
+- **LOGGING!!!**
 - Added [Updates Log](/update-log.md)
 - Added [Drivers Tools](/src/core/drivers_tools.lua)
 - Added [Remote Access](/src/modules/remote.lua) to ACPS
@@ -19,4 +20,4 @@
 - Now, you can press key, that in English QWERTY has need value (if you press "У" APCS will understand it how "E")
 - Calls to get gen/ES/FS data has been optimized
 
-Count of Cup Coffee has been drunk: 10
+Count of Cup Coffee has been drunk: 12

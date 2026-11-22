@@ -17,8 +17,9 @@ Error or Err have codes (ID) (if they caused by APCS via `assert` or `error`). T
 	- *108* -- Occurs when APCS in mode 2, and gen_start > gen_stop, which is unacceptable, because will be PF
 	- *109* -- Occurs when APCS in unknown mode
 	- *110* -- Occurs when for remote module APCS in [config](/src/config.lua) encrypting is enabled, but Data Card hasn't been searched. If you have Data Card make sure that its support encrypting (have func encrypt at its proxy). For OpenComp usually requires Data Card 2+ level for encrypting
-	- *111* -- Occurs when для remote module APCS in [config](/src/config.lua) applied port that isn't at range 1-65535
-	- *112* -- Occurs when для remote module APCS in [config](/src/config.lua) encrypting is enabled, but in one of encryption key isn't 128 bit
+	- *111* -- Occurs when for remote module APCS in [config](/src/config.lua) applied port that isn't at range 1-65535
+	- *112* -- Occurs when for remote module APCS in [config](/src/config.lua) encrypting is enabled, but in one of encryption key isn't 128 bit
+	- *120* -- Occurs when for max log size at [config](/src/config.lua) less 256
 
 - **2xx** -- Errors of module REMOTE if you contact with its. This errors don't reboot or shutdown APCS anyway
 	- *200* -- Occurs when during processing message an error occurred

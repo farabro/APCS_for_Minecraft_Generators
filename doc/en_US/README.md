@@ -17,3 +17,5 @@
 [How remote APCS with network card?](/doc/en_US/remote.md)
 
 [Langs](/doc/en_US/lang.md)
+
+[Log](/doc/en_US/log.md)

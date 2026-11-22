@@ -17,3 +17,5 @@
 [Как взаимодействовать с APCS через сетевую карту?](/doc/ru_RU/remote.md)
 
 [Языки](/doc/ru_RU/lang.md)
+
+[Лог](/doc/ru_RU/log.md)

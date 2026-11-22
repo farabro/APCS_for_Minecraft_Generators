@@ -21,7 +21,19 @@
 
 **time_sleep** -- Sleep time between cycles. Number
 
-**output** -- Should it output info in screen? Bool
+**logging** -- Logging. Table
+	**enable** -- Enabled? Bool
+	**log_lvl** -- Logging level. Levels in text vatiant you can see at log_lvls_names. Remember, in Lua we start from 1. Number
+	**log_devices** -- File systems (Disks, RAID) for logging at them. String (addr)
+	**log_directory** -- Logging at directory? Table
+		**enable** -- Enabled? Bool
+		**directories** -- Table with name of directories. Table. Example: `{"logs", "my_apcs"}` will safe to /logs/my_apcs at device
+	**log_name** -- Log file name. String
+	**max_log_size** -- Max log size. Number. If set to 0, the log will be written until space runs out at device
+	**syslog_servers_addrs** -- Addr-s of [syslog servers](https://en.wikipedia.org/wiki/Syslog) (we use redacted syslog standart). Table with addr-s
+	**log_lvls_names** -- Text values of log levels. We recommended you don't touch it. Table
+
+**output_to_display** -- Should it output info in screen? Bool
 
 **lang** -- Lang. Number (lang ID). For en_US must install 1. [About langs](/doc/en_US/lang.md)
 

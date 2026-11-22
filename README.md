@@ -70,5 +70,5 @@ If you’ve genuinely decided to modify the code and contribute to the project, 
 # LICENSE
 
 This software is made available under the terms of *either* of the licenses
-found in LICENSE-APACHE or LICENSE-MIT. Contributions to this software are made
+found in [LICENSE-APACHE](/LICENSE-APACHE) or [LICENSE-MIT](/LICENSE-MIT). Contributions to this software are made
 under the terms of *both* these licenses.
