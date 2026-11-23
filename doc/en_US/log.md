@@ -19,3 +19,20 @@ Where:
 Examples:
 - `log({2, "Successfully startup"})`
 - `log({{0.7, 1, "TEST DEBUG MESSAGE"}, {1, 5, "TEST ERROR"}}, true)`
+
+## buffer
+We recommendate use buffer (otherwise will be many lags).  
+For this at this core module has "buffer" (*log.buffer*);  
+You can use its! There small API:
+- **log.buffer.add()** -- literally the image and likeness log(), but write at buffer! Doc of this log is upper
+- **log.buffer.push()** -- push buffer. In other words, it calls log(log.buffer(), true) and reset buffer
+- **log.buffer()** -- Return buffer
+
+So, you often don’t need to push buffer, for you its do main scripts ([init](/src/init.lua) or [main](/src/main.lua) depending on the situation)
+
+And... It's all! Yeah, just all.  
+
+Examples:
+- `log.buffer.add({4, "WOW, IT'S BUFFERED LOG!!"})`
+- `log.buffer.add({{259, 4, "Your log message 1 there"}, {330, 2, "Your log message 2 there. So there are can be more events"}}, true)`
+- `log.buffer.push()`

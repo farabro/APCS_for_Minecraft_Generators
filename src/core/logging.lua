@@ -1,4 +1,8 @@
-_G.log = {}
+_G.log = {
+	buffer={
+		data={{}, 0},
+	},
+}
 
 if _G.config.logging.enabled then
 	function _G.log.set_log_device(numb)
@@ -30,63 +34,102 @@ if _G.config.logging.enabled then
 		end
 	end
 	
+	function _G.log._parse(data, list_of_events)
+		if type(data) ~= "table" or data == {} then return end
+		local result = ""
+		
+		if list_of_events then
+			for event = 1, #data do
+				if data[event][2] >= _G.config.logging.log_lvl then
+					result = result
+						.. "[" .. tostring(data[event][1]) .. "] "
+						.. "[" .. tostring(_G.config.logging.log_lvls_names[data[event][2]]) .. "] "
+						.. tostring(data[event][3]) .. "\n"
+				end
+			end
+		else
+			if data[1] < _G.config.logging.log_lvl then return end
+			result =
+				"[" .. tostring(computer.uptime()) .. "] "
+				.. "[" .. tostring(_G.config.logging.log_lvls_names[data[1]]) .. "] "
+				.. tostring(data[2]) .. "\n"
+		end
+		
+		return result
+	end
+	
+	function _G.log._write(data)
+		if not data then return end
+		
+		local len_of_result = string.len(data)
+		local new_log_size = _G.log.log_size + len_of_result
+		local spaceLeft = _G.log.log_device[3].spaceTotal() - _G.log.log_device[3].spaceUsed()
+		
+		-- Check that we can begin log
+		if (new_log_size > _G.config.logging.max_log_size and _G.config.logging.max_log_size ~= 0) or len_of_result > spaceLeft then
+			if _G.log.count_of_log_devices == _G.log.log_device[1] then
+				_G.log.set_log_device(1)
+			else
+				_G.log.set_log_device(_G.log.log_device[1]+1)
+			end
+			
+			_G.log.log_device[3].remove(_G.log.path)
+			_G.log.log_size = 0
+		end
+		
+		-- write to a log file
+		local handle = _G.log.log_device[3].open(_G.log.path, 'a')
+		local ok = pcall(_G.log.log_device[3].write, handle, data)
+		_G.log.log_device[3].close(handle)
+		
+		if ok then _G.log.log_size = new_log_size end -- set new log size (if write was successfully)
+		
+		-- send to syslog servers
+		for _, addr in ipairs(_G.config.logging.syslog_servers_addrs) do
+			pcall(_G.modules.remote.send, addr, data)
+		end
+	end
+	
 	-- metatable
 	setmetatable(
 		_G.log,
 		{
 			__call = function(_, log_event, list_of_events)
-				if type(log_event) ~= "table" or log_event == {} then return end
-				local result = ""
-				
-				if list_of_events then
-					for event = 1, #log_event do
-						if log_event[event][2] >= _G.config.logging.log_lvl then
-							result = result
-								.. "[" .. tostring(log_event[event][1]) .. "] "
-								.. "[" .. tostring(_G.config.logging.log_lvls_names[log_event[event][2]]) .. "] "
-								.. tostring(log_event[event][3]) .. "\n"
-						end
-					end
-				else
-					if log_event[1] < _G.config.logging.log_lvl then return end
-					result =
-						"[" .. tostring(computer.uptime()) .. "] "
-						.. "[" .. tostring(_G.config.logging.log_lvls_names[log_event[1]]) .. "] "
-						.. tostring(log_event[2]) .. "\n"
-				end
-				
-				if not result then return end
-				
-				local len_of_result = string.len(result)
-				local new_log_size = _G.log.log_size + len_of_result
-				local spaceLeft = _G.log.log_device[3].spaceTotal() - _G.log.log_device[3].spaceUsed()
-				
-				-- Check that we can begin log
-				if (new_log_size > _G.config.logging.max_log_size and _G.config.logging.max_log_size ~= 0) or len_of_result > spaceLeft then
-					if _G.log.count_of_log_devices == _G.log.log_device[1] then
-						_G.log.set_log_device(1)
-					else
-						_G.log.set_log_device(_G.log.log_device[1]+1)
-					end
-					
-					_G.log.log_device[3].remove(_G.log.path)
-					_G.log.log_size = 0
-				end
-				
-				-- write to a log file
-				local handle = _G.log.log_device[3].open(_G.log.path, 'a')
-				local ok = pcall(_G.log.log_device[3].write, handle, result)
-				_G.log.log_device[3].close(handle)
-				
-				if ok then _G.log.log_size = new_log_size end -- set new log size (if write was successfully)
-				
-				-- send to syslog servers
-				for _, addr in ipairs(_G.config.logging.syslog_servers_addrs) do
-					pcall(_G.modules.remote.send, addr, result)
-				end
+				_G.log._write(_G.log._parse(log_event, list_of_events))
 			end,
 		}
 	)
+	
+	setmetatable(
+		_G.log.buffer,
+		{
+			__call = function(...) return _G.log.buffer.data[1] end
+		}
+	)
+	
+	function _G.log.buffer.add(log_event, list_of_events)
+		if type(log_event) ~= "table" or log_event == {} then return end
+		
+		if list_of_events then
+			local count_of_log_events = #log_event
+			for event = 1, count_of_log_events do
+				_G.log.buffer.data[1][_G.log.buffer.data[2]+event] = log_event[event]
+			end
+			_G.log.buffer.data[2] = _G.log.buffer.data[2]+count_of_log_events
+		else
+			log_event = {
+				computer.uptime(),
+				log_event[1],
+				log_event[2],
+			}
+			table.insert(_G.log.buffer.data[1], log_event)
+		end
+	end
+	
+	function _G.log.buffer.push()
+		log(_G.log.buffer(), true)
+		_G.log.buffer = {{}, 0}
+	end
 	
 	function _G.log.init()
 		local init_log_events = {}
@@ -130,16 +173,24 @@ if _G.config.logging.enabled then
 		_G.log.set_log_device(1)
 		_G.log.log_size = _G.log.log_device[3].size(_G.log.path) -- if file isn't exists will be return 0, but we set 0 if file isn't exists or an error was occurred anyway
 		
-		log(init_log_events, true)
+		log.buffer.add(init_log_events, true)
 	end
 	
 	_G.log.init()
 else
-	-- metatable for disenabled logging
+	-- metatables for disenabled logging
 	
 	setmetatable(
 		_G.log,
 		{
+			__call = function(...) end,
+		}
+	)
+	
+	setmetatable(
+		_G.log.buffer,
+		{
+			__index = function(...) return function(...) end end,
 			__call = function(...) end,
 		}
 	)

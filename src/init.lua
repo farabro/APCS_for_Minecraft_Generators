@@ -1,7 +1,5 @@
 local ok, result = pcall(function()
 	_G.APCSVERSION = "2.1.0"
-	
-	_G.log_buffer = {}
 	_G.BootFilesystemAddr = computer.getBootAddress()
 	_G.BootFilesystem = component.proxy(BootFilesystemAddr)
 	
@@ -54,7 +52,7 @@ local ok, result = pcall(function()
 	-- Creating Hash Tables for O(1)
 	_G.config.su = set_value_for_every_element(_G.config.su, true) -- SU
 	
-	table.insert(_G.log_buffer, {computer.uptime(), 1, "Initializing drivers tools"})
+	_G.log.buffer.add({1, "Initializing drivers tools"})
 	loadfile("/core/drivers_tools.lua")(loadfile)
 	_G.drivers = {
 		gen = {},
@@ -70,21 +68,21 @@ local ok, result = pcall(function()
 		end
 	end
 	
-	table.insert(_G.log_buffer, {computer.uptime(), 1, "Loading drivers"})
+	_G.log.buffer.add({1, "Loading drivers"})
 	do_dir("/drivers")
 	
-	table.insert(_G.log_buffer, {computer.uptime(), 1, "Loading libs"})
+	_G.log.buffer.add({1, "Loading libs"})
 	do_dir("/libs")
 	
-	table.insert(_G.log_buffer, {computer.uptime(), 1, "Loading modules"})
+	_G.log.buffer.add({1, "Loading modules"})
 	do_dir("/modules")
 	
-	table.insert(_G.log_buffer, {computer.uptime(), 1, "Initializing libs"})
+	_G.log.buffer.add({1, "Initializing libs"})
 	for APCS_lib in pairs(_G.libs) do
 		if _G.libs[APCS_lib].init then _G.libs[APCS_lib].init() end
 	end
 	
-	table.insert(_G.log_buffer, {computer.uptime(), 1, "Initializing drivers"})
+	_G.log.buffer.add({1, "Initializing drivers"})
 	for driver_type in pairs(_G.drivers) do
 		if _G.drivers[driver_type].init then
 			_G.drivers[driver_type].init()
@@ -97,15 +95,14 @@ local ok, result = pcall(function()
 		end
 	end
 	
-	table.insert(_G.log_buffer, {computer.uptime(), 1, "Initializing modules"})
+	_G.log.buffer.add({1, "Initializing modules"})
 	for APCS_module in pairs(_G.modules) do
 		if _G.modules[APCS_module].init then _G.modules[APCS_module].init() end
 	end
 	
 	_G.tags.state = "O"
-	table.insert(_G.log_buffer, {computer.uptime(), 2, "Successfully startup"})
-	log(_G.log_buffer, true)
-	_G.log_buffer = nil
+	_G.log.buffer.add({2, "Successfully startup"})
+	_G.log.buffer.push()
 	
 	local ok, result = pcall(function()
 		loadfile("/main.lua")(loadfile)
@@ -122,10 +119,8 @@ local ok, result = pcall(function()
 			err[2] = 000
 		end
 		
-		_G.log_buffer = {}
-		table.insert(_G.log_buffer,
+		_G.log.buffer.add(
 			{
-				computer.uptime(),
 				5,
 				"An error"
 					.. err[2] == 000 or "" and " (" .. tostring(err[2]) .. ")"
@@ -135,12 +130,12 @@ local ok, result = pcall(function()
 		)
 		
 		if _G.config.reboot_with_err then
-			table.insert(_G.log_buffer, {computer.uptime(), 4, "Rebooting now..."})
-			log(_G.log_buffer, true)
+			_G.log.buffer.add({4, "Rebooting now..."})
+			_G.log.buffer.push()
 			
 			computer.shutdown(true)
 		else
-			log(_G.log_buffer, true)
+			_G.log.buffer.push()
 			error({err[1], err[2]}, 0)
 		end
 	end
