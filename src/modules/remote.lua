@@ -3,9 +3,9 @@ _G.tags.remote = {}
 
 function _G.modules.remote.send(address, message, encrypt)
 	encrypt = encrypt or true
-	if _G.config.remote.encrypting and _G.config.remote.AES_keys[event[3]] and encrypt then
+	if _G.config.remote.encrypting and encrypt and _G.config.remote.AES_keys[address] then
 		local iv = _G.tags.remote.data_card.random(16)
-		message = iv .. _G.tags.remote.data_card.encrypt(message, _G.config.remote.AES_keys[event[3]], iv)
+		message = iv .. _G.tags.remote.data_card.encrypt(message, _G.config.remote.AES_keys[address], iv)
 	end
 	
 	_G.tags.remote.modem.send(address, _G.config.remote.controller_port, message)
@@ -26,11 +26,15 @@ function _G.modules.remote.process_message(event)
 			
 			return message
 		end)
-		if not ok then _G.modules.remote.send(event[3], "Err E-201", false) return end
+		if not ok then
+			_G.modules.remote.send(event[3], "Err E-201", false)
+			log.buffer.add({5, "E-201; addr: " .. event[3]})
+			return
+		end
 		
-		message_gmatch = string.gmatch(message, "%S+")
+		local message_gmatch = string.gmatch(message, "%S+")
 		
-		commands = {}
+		local commands = {}
 		for command in message_gmatch do
 			table.insert(commands, command)
 		end
@@ -73,6 +77,6 @@ function _G.modules.remote.init()
 	
 	-- DEV
 	-- TODO: Make Modems Driver
-	modem = component.proxy(component.list("modem")())
-	if modem then modem.open(_G.config.remote.control_port) end
+	_G.tags.remote.modem = component.proxy(component.list("modem")())
+	if _G.tags.remote.modem then _G.tags.remote.modem.open(_G.config.remote.control_port) end
 end

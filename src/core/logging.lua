@@ -59,7 +59,7 @@ if _G.config.logging.enabled then
 	end
 	
 	function _G.log._write(data)
-		if not data then return end
+		if type(data) ~= "string" or data == "" then return end
 		
 		local len_of_result = string.len(data)
 		local new_log_size = _G.log.log_size + len_of_result
@@ -112,11 +112,17 @@ if _G.config.logging.enabled then
 		
 		if list_of_events then
 			local count_of_log_events = #log_event
+			local losted_events = 0
 			for event = 1, count_of_log_events do
-				_G.log.buffer.data[1][_G.log.buffer.data[2]+event] = log_event[event]
+				if log_event[event][2] < _G.config.logging.log_lvl then
+					losted_events = losted_events + 1
+				else
+					_G.log.buffer.data[1][_G.log.buffer.data[2]+event-losted_events] = log_event[event]
+				end
 			end
-			_G.log.buffer.data[2] = _G.log.buffer.data[2]+count_of_log_events
+			_G.log.buffer.data[2] = _G.log.buffer.data[2]+count_of_log_events-losted_events
 		else
+			if log_event[1] < _G.config.logging.log_lvl then return end
 			log_event = {
 				computer.uptime(),
 				log_event[1],
@@ -127,8 +133,9 @@ if _G.config.logging.enabled then
 	end
 	
 	function _G.log.buffer.push()
+		if _G.log.buffer() == {} then return end
 		log(_G.log.buffer(), true)
-		_G.log.buffer = {{}, 0}
+		_G.log.buffer.data = {{}, 0}
 	end
 	
 	function _G.log.init()

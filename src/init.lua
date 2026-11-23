@@ -104,6 +104,12 @@ local ok, result = pcall(function()
 	_G.log.buffer.add({2, "Successfully startup"})
 	_G.log.buffer.push()
 	
+	local shutdown = computer.shutdown
+	function _G.computer.shutdown(...)
+		log.buffer.push()
+		shutdown(...)
+	end
+	
 	local ok, result = pcall(function()
 		loadfile("/main.lua")(loadfile)
 	end)
