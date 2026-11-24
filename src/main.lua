@@ -11,14 +11,8 @@ local all_storage_for_gen
 local all_max_storage_for_gen
 local disactivated_state
 local event = {}
-local reset_gens_state
-local keys = {
-	[18] = "E",
-	[19] = "R",
-	[24] = "O",
-	[46] = "C",
-	[50] = "M",
-}
+local gens_in_E_state = {}
+local gens_in_M_state = {}
 
 -- Func
 
@@ -35,11 +29,39 @@ function _G.stop_all_gens()
 	log.buffer.add({2, "Stop signal has been sended to all gens"})
 end
 
+function _G.stop_gen(gen_driver, gen_index) 
+	local ok = pcall(_G.drivers.gen[gen_driver].stop, gen_index)
+	if ok then
+		_G.tags.gen[gen_driver].data[gen_index].state = "S"
+		log.buffer.add({1, "Stop signal has been sended to generator (" .. gen_driver .. ") #" .. tostring(gen_index)})
+	else
+		log.buffer.add({5, "Stop signal hasn't been sended to generator (" .. gen_driver .. ") #" .. tostring(gen_index)})
+	end
+end
+
+function _G.start_gen(gen_driver, gen_index)
+	local ok = pcall(_G.drivers.gen[gen_driver].start, gen_index)
+	if ok then
+		_G.tags.gen[gen_driver].data[gen_index].state = "W"
+		log.buffer.add({1, "Start signal has been sended to generator (" .. gen_driver .. ") #" .. tostring(gen_index)})
+	else
+		log.buffer.add({5, "Start signal hasn't been sended to generator (" .. gen_driver .. ") #" .. tostring(gen_index)})
+	end
+end
+
 function _G.check_perms(doing, user, perm_table, su_table)
 	if su_table[user] then
 		return true
 	else
 		return perm_table[doing]
+	end
+end
+
+function _G.reset_gen_state(gen_driver, gen_index)
+	if _G.tags.gen[gen_driver].data[gen_index].working == true then
+		_G.tags.gen[gen_driver].data[gen_index].state = "W"
+	elseif _G.tags.gen[gen_driver].data[gen_index].working == false then
+		_G.tags.gen[gen_driver].data[gen_index].state = "S"
 	end
 end
 
@@ -68,8 +90,23 @@ function _G.set_state(state, user, perm_table, perm_reset_table, su_table)
 	end
 	if state == "O" and _G.check_perms(_G.tags.state, user, perm_reset_table, su_table) then
 		disactivated_state = _G.tags.state
-		_G.tags.state = "O"
-		reset_gens_state = true
+		if disactivated_state == "O" then
+			if _G.check_perms("E", user, perm_reset_table, su_table) then
+				for gen in pairs(gens_in_E_state) do
+					_G.reset_gen_state(gen[1], gen[2])
+				end
+			end
+			
+			if _G.check_perms("M", user, perm_reset_table, su_table) then
+				for gen in pairs(gens_in_E_state) do
+					_G.reset_gen_state(gen[1], gen[2])
+				end
+			end
+			
+			disactivated_state = "Individial Generators"
+		else 
+			_G.tags.state = "O"
+		end
 		log.buffer.add({4, disactivated_state .. " State has been disactivated by " .. user})
 		disactivated_state = nil
 		computer.beep(1500)
@@ -83,10 +120,9 @@ local ok_main, result_main = pcall(function()
 	local time_now
 	local time_sleep = _G.config.time_sleep
 	while true do
-		reset_gens_state = false
 		if event.n then
 			if event[1] == "key_up" then
-				_G.set_state(keys[event[4]], event[5], _G.config.users_can_use, _G.config.users_can_use.O, _G.config.su)
+				_G.modules.physical.process_keyboard_act(event)
 			elseif event[1] == "modem_message" then
 				_G.modules.remote.process_message(event)
 			end
@@ -96,6 +132,8 @@ local ok_main, result_main = pcall(function()
 		time_elpased = time_now - start_cycle_time
 		if time_elpased >= time_sleep then
 			start_cycle_time = time_now
+			
+			
 			if _G.config.mode == 1 then
 				all_storage = {}
 				all_max_storage = {}
@@ -124,29 +162,28 @@ local ok_main, result_main = pcall(function()
 				end
 			end
 			
+			
 			for gen_driver in pairs(_G.drivers.gen) do
 				elements_count = #_G.tags.gen[gen_driver].elements
 				if elements_count > 0 then
 					for gen_index = 1, elements_count do
 						_G.drivers.gen[gen_driver].get_data(gen_index)
 						
-						if _G.tags.state == "E" then
+						if _G.tags.state == "E" or _G.tags.gen[gen_driver].data[gen_index].state == "E" then
 							if _G.tags.gen[gen_driver].data[gen_index].working then
 								_G.drivers.gen[gen_driver].stop(gen_index)
-								log.buffer.add({3, "Gen (" .. gen_driver .. ") #" .. tostring(gen_index) .. " has been manually started, but APCS mode now is Emergency. We E-Stopped the gen"})
+								log.buffer.add({3, "Generator (" .. gen_driver .. ") #" .. tostring(gen_index) .. " has been manually started, but mode now is Emergency. We E-Stopped the gen"})
 							end
 							_G.tags.gen[gen_driver].data[gen_index].state = "S"
 						else
 							-- Generator State
-							if _G.tags.gen[gen_driver].data[gen_index].state == nil or reset_gens_state then
-								if _G.tags.gen[gen_driver].data[gen_index].working == true then
-									_G.tags.gen[gen_driver].data[gen_index].state = "W"
-								elseif _G.tags.gen[gen_driver].data[gen_index].working == false then
-									_G.tags.gen[gen_driver].data[gen_index].state = "S"
-								end
-							elseif (_G.tags.gen[gen_driver].data[gen_index].working == true and _G.tags.gen[gen_driver].data[gen_index].state == "S") or (_G.tags.gen[gen_driver].data[gen_index].working == false and _G.tags.gen[gen_driver].data[gen_index].state == "W") then
-								log.buffer.add({3, "Gen (" .. gen_driver .. ") #" .. tostring(gen_index) .. " set to manual control"})
-								_G.tags.gen[gen_driver].data[gen_index].state = "M"
+							if _G.tags.gen[gen_driver].data[gen_index].state == nil then
+								_G.reset_gen_state(gen_driver, gen_index)
+							elseif _G.tags.gen[gen_driver].data[gen_index].working == true and _G.tags.gen[gen_driver].data[gen_index].state == "S" then
+								log.buffer.add({4, "Generator (" .. gen_driver .. ") #" .. tostring(gen_index) .. " state set to E"})
+								log.buffer.add({1, "GENERATOR DATA\n  working: " .. tostring(_G.tags.gen[gen_driver].data[gen_index].working) .. "\n  state (was): " .. (_G.tags.gen[gen_driver].data[gen_index].state or "unkown")})
+								_G.tags.gen[gen_driver].data[gen_index].state = "E"
+								table.insert(gens_in_E_state, {gen_driver, gen_index})
 							end
 							
 							if _G.tags.gen[gen_driver].data[gen_index].state ~= "M" and _G.tags.state ~= "M" then
@@ -165,7 +202,7 @@ local ok_main, result_main = pcall(function()
 								if not ok then
 									log.buffer.add({5, "PID Error: " .. result})
 									if _G.tags.gen[gen_driver].data[gen_index].working then
-										_G.drivers.gen[gen_driver].stop(gen_index)
+										stop_gen(gen_driver, gen_index)
 										log.buffer.add({3, "E-STOP Gen (" .. gen_driver .. ") #" .. tostring(gen_index)})
 									end
 								end
@@ -182,7 +219,8 @@ local ok_main, result_main = pcall(function()
 end)
 
 log.buffer.add(4, "!!! PANIC !!!\n   We exited from main cycle")
+pcall(log.buffer.push())
 _G.stop_all_gens()
 if not ok_main then
-	error(result_main, 0)
+	error(result_main)
 end

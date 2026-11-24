@@ -1,10 +1,10 @@
 _G.config = {
-	mode = 1,
+	mode = 2,
 	modes_config = {
-		Y_max = 60,
-		Y_min = 45,
-		gen_start = 60,
-		gen_stop = 45,
+		Y_max = 45,
+		Y_min = 60,
+		gen_start = 45,
+		gen_stop = 60,
 		
 		auto_search_FS = true,
 		manual_FS_address_table = {},
@@ -17,7 +17,7 @@ _G.config = {
 	manual_gens_address_table = {},
 	
 	reboot_with_err = true,
-	time_sleep = 2.5,
+	time_sleep = 2,
 	
 	
 	logging = {
@@ -47,24 +47,31 @@ _G.config = {
 	-- SCADA
 	
 	
-	output_to_display = false, -- Not currently in use
-	lang = 1, -- Neither does it
+	display = { -- Not currently in use
+		enabled = false,
+		lang = 1,
+		display_addr = nil,
+	},
 	
-	su = {"FaraBro"},
-	users_can_use = {
-		E = true,
-		M = true,
-		C = false,
-		O = {
-			E = false,
-			M = true,
-			O = true,
-			R = false,
+	physical = {
+		su = {"FaraBro"},
+		users_can = {
+			set_state = {
+				E = true,
+				M = true,
+				C = false,
+			},
+			reset_state = {
+				E = false,
+				M = true,
+				O = true,
+				R = false,
+			},
 		},
 	},
 	
 	remote = {
-		encrypting = false,
+		encrypting = true,
 		AES_keys = {},
 		
 		control_port = 4840,

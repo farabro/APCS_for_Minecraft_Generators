@@ -14,6 +14,7 @@
 - If main cycle will be stopped then all gens will be stop
 
 ## Updated
+- We have [physical (keyboard) module](/src/modules/physical.lua)
 - Now, instead of `get_elements`, a more intuitive `init` is called
 - Now, Links in English lang.
 - Now, Documentation has version in English lang

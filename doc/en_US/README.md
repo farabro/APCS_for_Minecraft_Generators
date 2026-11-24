@@ -12,7 +12,7 @@
 
 [Users?!](/doc/en_US/users.md)
 
-[How contact APCS with keyboard?](/doc/en_US/keyboard.md)
+[How contact APCS with keyboard?](/doc/en_US/physical.md)
 
 [How remote APCS with network card?](/doc/en_US/remote.md)
 

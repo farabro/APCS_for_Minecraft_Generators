@@ -22,24 +22,27 @@
 **time_sleep** -- Sleep time between cycles. Number
 
 **logging** -- Logging. Table
-	**enable** -- Enabled? Bool
-	**log_lvl** -- Logging level. Levels in text vatiant you can see at log_lvls_names. Remember, in Lua we start from 1. Number
-	**log_devices** -- File systems (Disks, RAID) for logging at them. String (addr)
-	**log_directory** -- Logging at directory? Table
-		**enable** -- Enabled? Bool
-		**directories** -- Table with name of directories. Table. Example: `{"logs", "my_apcs"}` will safe to /logs/my_apcs at device
-	**log_name** -- Log file name. String
-	**max_log_size** -- Max log size. Number. If set to 0, the log will be written until space runs out at device
-	**syslog_servers_addrs** -- Addr-s of [syslog servers](https://en.wikipedia.org/wiki/Syslog) (we use redacted syslog standart). Table with addr-s
-	**log_lvls_names** -- Text values of log levels. We recommended you don't touch it. Table
+- **enable** -- Enabled? Bool
+- **log_lvl** -- Logging level. Levels in text vatiant you can see at log_lvls_names. Remember, in Lua we start from 1. Number
+- **log_devices** -- File systems (Disks, RAID) for logging at them. String (addr)
+- **log_directory** -- Logging at directory? Table
+	- **enable** -- Enabled? Bool
+	- **directories** -- Table with name of directories. Table. Example: `{"logs", "my_apcs"}` will safe to /logs/my_apcs at device
+- **log_name** -- Log file name. String
+- **max_log_size** -- Max log size. Number. If set to 0, the log will be written until space runs out at device
+- **syslog_servers_addrs** -- Addr-s of [syslog servers](https://en.wikipedia.org/wiki/Syslog) (we use redacted syslog standart). Table with addr-s
+- **log_lvls_names** -- Text values of log levels. We recommended you don't touch it. Table
 
-**output_to_display** -- Should it output info in screen? Bool
+**display** -- display SCADA. Table
+- **enable** -- Should it output info in screen? Bool
+- **lang** -- Lang. Number (lang ID). For en_US must install 1. [About langs](/doc/en_US/lang.md)
+- **display_addr** -- Display Address. String (address). If nil => display set automatically
 
-**lang** -- Lang. Number (lang ID). For en_US must install 1. [About langs](/doc/en_US/lang.md)
-
-**su** -- super users. Table with string value without keys. Write APCS administators nicknames
-
-**users_can_use** -- What user can do. Table. O where for, reset gen in M state. [More about actions](/doc/en_US/keyboard.md). [More about users](/doc/en_US/users.md)
+**physical** -- Physical SCADA (L0). Table
+- **su** -- super users. Table with string value without keys. Write APCS administators nicknames
+- **users_can** -- What user can do. Table. [More about actions](/doc/en_US/physical.md). [More about users](/doc/en_US/users.md)
+	- **set_state** -- set n APCS state. Bool
+	- **reset_state** -- reset n APCS state. Bool. O where for, reset gens in M or E state (need user perm to reset E or M states)
 
 **remote** -- REMOTE module settings. Table
 - **encrypting** -- Should we use [AES encrypting](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard)? Bool

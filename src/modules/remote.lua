@@ -53,10 +53,11 @@ function _G.modules.remote.init()
 	if _G.config.remote.encrypting then
 		local data
 		
-		for address in component.list("data") do
-			data = component.proxy(address)
+		for addr in component.list("data") do
+			data = component.proxy(addr)
 			if data.encrypt then
 				_G.tags.remote.data_card = data
+				log.buffer.add({1, "Data Card: " .. addr})
 				break
 			end
 		end
@@ -75,7 +76,6 @@ function _G.modules.remote.init()
 	inspect_port(_G.config.remote.control_port)
 	inspect_port(_G.config.remote.controller_port)
 	
-	-- DEV
 	-- TODO: Make Modems Driver
 	_G.tags.remote.modem = component.proxy(component.list("modem")())
 	if _G.tags.remote.modem then _G.tags.remote.modem.open(_G.config.remote.control_port) end
