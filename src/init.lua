@@ -15,13 +15,18 @@ local ok, result = pcall(function()
 	_G.BootFilesystemAddr = computer.getBootAddress()
 	_G.BootFilesystem = component.proxy(BootFilesystemAddr)
 	_G.gpuAddr = component.list("gpu")()
-	_G.gpu = component.proxy(_G.gpuAddr)
+	if _G.gpuAddr then
+		_G.gpu = component.proxy(_G.gpuAddr)
+	else
+		_G.gpu = nil
+	end
 	
 	local tmp_log_buffer = {}
 	table.insert(tmp_log_buffer, {
 		computer.uptime(),
 		1, 
 		"Device starting..."
+			.. "\n  " .. (computer.getArchitecture() or "Unkown Architecture")
 			.. "\n  RAM " .. (tostring(computer.totalMemory() // 1024) or "Unkown") .. " Kb"
 			.. "\n  GPU " .. (_G.gpuAddr or "hasn't been found")
 	})
@@ -133,7 +138,7 @@ local ok, result = pcall(function()
 	_G.log.buffer.add({
 		1,
 		"Startup data"
-			.. "\n  Used RAM " .. tostring((computer.totalMemory() - computer.freeMemory()) // 1024) .. " / " .. tostring(computer.totalMemory() // 1024) .. " Kb"
+			.. "\n  Free RAM " .. tostring(computer.freeMemory() // 1024) .. " / " .. tostring(computer.totalMemory() // 1024) .. " Kb"
 	})
 	_G.log.buffer.push()
 	
@@ -155,10 +160,10 @@ local ok, result = pcall(function()
 		_G.log.buffer.add(
 			{
 				5,
-				"An error"
-					.. err[2] == 000 or "" and " (" .. tostring(err[2]) .. ")"
+				"An error "
+					.. tostring(err[2] == 000 and "" or (" (" .. tostring(err[2]) .. ")"))
 					.. " has been occurred at main cycle"
-					.. err[2] == 000 or "\n\t" .. err[1] and ""
+					.. tostring(err[2] == 000 and ("\n\t" .. tostring(err[1])) or "")
 			}
 		)
 		
@@ -176,7 +181,7 @@ end)
 
 if not ok then
 	computer.beep(500, 0.2)
-	error(_G.parse_error(result))
+	error(tostring(_G.parse_error(result)[1]))
 else
 	computer.shutdown()
 end

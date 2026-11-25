@@ -78,5 +78,8 @@ function _G.modules.remote.init()
 	
 	-- TODO: Make Modems Driver
 	_G.tags.remote.modem = component.proxy(component.list("modem")())
-	if _G.tags.remote.modem then _G.tags.remote.modem.open(_G.config.remote.control_port) end
+	if _G.tags.remote.modem then
+		log.buffer.add({1, "Network Card: " .. _G.tags.remote.modem.address})
+		_G.tags.remote.modem.open(_G.config.remote.control_port)
+	end
 end

@@ -18,10 +18,21 @@
 This APCS is ~~fully bullshit~~ a system designed to control generators.  
 To run the code, you will need a Lua emulator similar to [OpenComputers](https://github.com/MightyPirates/OpenComputers).  
 Currently, only generators and storage units from the [NTM](https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT) are supported.  
-Tested and working on versions:
+Tested and working on:
 - Minecraft: v1.7.10
-- Lua: v5.3
+- Lua: 5.3 & 5.4
+	- Lua 5.4 -- test thing from OpenComputers Developers. Config at OpenComputers config. *!!EXPEREMENTAL!!*
 - OpenComputers: v1.8.10
+	- RAM: 192 Kb (1 plate of 1-st tier)
+	- CPU: 1 tier
+	- Data Card: 2 tier (for remote trafic encrypting)
+	- Network Card (for remote access)
+	- GPU: 1 tier
+	- HDD: 1 Mb (1 HDD of 1-st tier)
+	- EEPROM: Standart Lua BIOS
+	- Components Bus: CREATIVE (for stress-tests)
+	- RAID: 16 Mb (3 HDD of 3-rd tier) (for debug logging)
+	- Minimal 16 Gens
 - NTM: v1.0.27 X5860
 
 ## How to install?
@@ -48,10 +59,22 @@ If you’ve genuinely decided to modify the code and contribute to the project, 
 Данная APCS является ~~полной хренью~~ штукой, которая контролирует генераторы.  
 Для запуска кода вам потребуется любой эмулятор Lua кода, который похож на [OpenComputers](https://github.com/MightyPirates/OpenComputers)  
 На данный момент поддерживаются только генераторы и хранилища из мода [NTM](https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT)  
-Протестировано и работает на версиях:
+Протестировано и работает на:
 - Minecraft: v1.7.10
-- Lua: v5.3
+- Lua: 5.3 & 5.4
+	- Lua 5.4 -- тестовая штука от создателей OpenComputers. Настраивается в конфиге. Нестабильна, эксперементальна.
 - OpenComputers: v1.8.10
+	- ОЗУ: 192 Кб (1 плашка 1-ого тира)
+	- ЦП: 1 Уровня
+	- Карта Данных: 2 Уровня (для шифрования remote трафика)
+	- Сетевая карта (для удалённого доступа)
+	- GPU: 1 Уровня
+	- HDD: 1 Мб (1 HDD 1-ого тира)
+	- EEPROM: Стандартный Lua BIOS
+	- Компонентная Шина: Творческая (для стресс-тестов)
+	- RAID: 12 Мб (3 HDD 3-его тира) (для логов)
+	- От 16 генераторов
+
 - NTM: v1.0.27 X5860
 
 ## Как установить?

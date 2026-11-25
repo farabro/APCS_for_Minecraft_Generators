@@ -1,10 +1,10 @@
 _G.config = {
-	mode = 2,
+	mode = 1,
 	modes_config = {
-		Y_max = 45,
-		Y_min = 60,
-		gen_start = 45,
-		gen_stop = 60,
+		Y_max = 60,
+		Y_min = 45,
+		gen_start = 60,
+		gen_stop = 45,
 		
 		auto_search_FS = true,
 		manual_FS_address_table = {},
@@ -17,11 +17,11 @@ _G.config = {
 	manual_gens_address_table = {},
 	
 	reboot_with_err = true,
-	time_sleep = 2,
+	time_sleep = 1,
 	
 	
 	logging = {
-		enabled = false,
+		enabled = true,
 		log_lvl = 2,
 		
 		log_devices = {},
@@ -47,7 +47,7 @@ _G.config = {
 	-- SCADA
 	
 	
-	display = { -- Not currently in use
+	display = { -- Not currently in use. Soon™
 		enabled = false,
 		lang = 1,
 		display_addr = nil,
@@ -58,20 +58,20 @@ _G.config = {
 		users_can = {
 			set_state = {
 				E = true,
-				M = true,
+				M = false,
 				C = false,
+				R = false,
 			},
 			reset_state = {
 				E = false,
-				M = true,
-				O = true,
-				R = false,
+				M = false,
+				O = false,
 			},
 		},
 	},
 	
 	remote = {
-		encrypting = true,
+		encrypting = false,
 		AES_keys = {},
 		
 		control_port = 4840,
