@@ -63,26 +63,33 @@ if _G.config.logging.enabled then
 		
 		local len_of_result = string.len(data)
 		local new_log_size = _G.log.log_size + len_of_result
-		local spaceLeft = _G.log.log_device[3].spaceTotal() - _G.log.log_device[3].spaceUsed()
 		
-		-- Check that we can begin log
-		if (new_log_size > _G.config.logging.max_log_size and _G.config.logging.max_log_size ~= 0) or len_of_result > spaceLeft then
-			if _G.log.count_of_log_devices == _G.log.log_device[1] then
-				_G.log.set_log_device(1)
-			else
-				_G.log.set_log_device(_G.log.log_device[1]+1)
+		local ok, err = pcall(function()
+			local spaceLeft = _G.log.log_device[3].spaceTotal() - _G.log.log_device[3].spaceUsed()
+			
+			-- Check that we can begin log
+			if (new_log_size > _G.config.logging.max_log_size and _G.config.logging.max_log_size ~= 0) or len_of_result > spaceLeft then
+				if _G.log.count_of_log_devices == _G.log.log_device[1] then
+					_G.log.set_log_device(1)
+				else
+					_G.log.set_log_device(_G.log.log_device[1]+1)
+				end
+				
+				_G.log.log_device[3].remove(_G.log.path)
+				_G.log.log_size = 0
 			end
 			
-			_G.log.log_device[3].remove(_G.log.path)
-			_G.log.log_size = 0
+			-- write to a log file
+			local handle = _G.log.log_device[3].open(_G.log.path, 'a')
+			local ok = pcall(_G.log.log_device[3].write, handle, data)
+			_G.log.log_device[3].close(handle)
+			
+			if ok then _G.log.log_size = new_log_size end -- set new log size (if write was successfully)
+		end)
+		
+		if not ok then
+			data = data .. _G.log._parse({5, "Write log to disk Error: " .. err})
 		end
-		
-		-- write to a log file
-		local handle = _G.log.log_device[3].open(_G.log.path, 'a')
-		local ok = pcall(_G.log.log_device[3].write, handle, data)
-		_G.log.log_device[3].close(handle)
-		
-		if ok then _G.log.log_size = new_log_size end -- set new log size (if write was successfully)
 		
 		-- send to syslog servers
 		for _, addr in ipairs(_G.config.logging.syslog_servers_addrs) do

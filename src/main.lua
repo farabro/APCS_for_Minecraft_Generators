@@ -5,10 +5,6 @@ local mode
 local ok
 local result
 local elements_count
-local all_storage
-local all_max_storage
-local all_storage_for_gen
-local all_max_storage_for_gen
 local disactivated_state
 local event = {}
 local gens_in_E_state = {}
@@ -118,9 +114,54 @@ end
 -- Main Cycle
 
 local ok_main, result_main = pcall(function()
-	local start_cycle_time = computer.uptime()
+	log.buffer.add({1, "Initialization main cycle"})
+	
+	log.buffer.add({1, "Setting default gens data..."})
+	for gen_driver in pairs(_G.drivers.gen) do
+		log.buffer.add({1, "Setting default data for " .. tostring(gen_driver) .. " gens type"})
+		
+		_G.tags.gen[gen_driver].elements.n = #_G.tags.gen[gen_driver].elements
+		if _G.tags.gen[gen_driver].elements.n > 0 then
+			for gen_index = 1, _G.tags.gen[gen_driver].elements.n do
+				_G.tags.gen[gen_driver].data[gen_index].known_data = true
+				reset_gen_state(gen_driver, gen_index)
+			end
+		end
+	end
+	
+	log.buffer.add({1, "Setting default FS data"})
+	for FS_driver in pairs(_G.drivers.FS) do
+		log.buffer.add({1, "Setting default data for " .. tostring(FS_driver) .. " FS type"})
+		
+		_G.tags.FS[FS_driver].elements.n = #_G.tags.FS[FS_driver].elements
+		if _G.tags.FS[FS_driver].elements.n > 0 then
+			for FS_index = 1, _G.tags.FS[FS_driver].elements.n do
+				_G.tags.FS[FS_driver].data[FS_index].known_data = true
+			end
+		end
+	end
+	
+	log.buffer.add({1, "Setting default ES data"})
+	for ES_driver in pairs(_G.drivers.ES) do
+		log.buffer.add({1, "Setting default data for " .. tostring(ES_driver) .. " ES type"})
+		
+		_G.tags.ES[ES_driver].elements.n = #_G.tags.ES[ES_driver].elements
+		if _G.tags.ES[ES_driver].elements.n > 0 then
+			for ES_index = 1, _G.tags.ES[ES_driver].elements.n do
+				_G.tags.ES[ES_driver].data[ES_index].known_data = true
+			end
+		end
+	end
+	
 	local time_now
+	local all_storage_for_gen
+	local all_max_storage_for_gen
 	local time_sleep = _G.config.time_sleep
+	
+	log.buffer.add({2, "Successfully main cycle initiate! Starting main cycle..."})
+	log.buffer.push()
+	
+	local start_cycle_time = computer.uptime()
 	while true do
 		if event.n then
 			if event[1] == "key_up" then
@@ -137,28 +178,54 @@ local ok_main, result_main = pcall(function()
 			
 			
 			if _G.config.mode == 1 then
-				all_storage = {}
-				all_max_storage = {}
+				_G.tags.all_storage = {}
+				_G.tags.all_max_storage = {}
 				for FS_driver in pairs(_G.drivers.FS) do
-					FS_count = #_G.tags.FS[FS_driver].elements
-					if FS_count > 0 then
-						for FS_index = 1, FS_count do
-							_G.drivers.FS[FS_driver].get_data(FS_index)
-							all_max_storage[_G.tags.FS[FS_driver].data[FS_index].fluid_type] = all_max_storage[_G.tags.FS[FS_driver].data[FS_index].fluid_type] or 0 + _G.tags.FS[FS_driver].data[FS_index].max_fluid
-							all_storage[_G.tags.FS[FS_driver].data[FS_index].fluid_type] = all_storage[_G.tags.FS[FS_driver].data[FS_index].fluid_type] or 0 + _G.tags.FS[FS_driver].data[FS_index].fluid
+					if _G.tags.FS[FS_driver].elements.n > 0 then
+						for FS_index = 1, _G.tags.FS[FS_driver].elements do
+							local ok, result = pcall(_G.drivers.FS[FS_driver].get_data, FS_index)
+							if ok then
+								if _G.tags.FS[FS_driver].data[FS_index].known_data == false then
+									log.buffer.add({2, "We have FS (" .. FS_driver .. ") #" .. tostring(FS_index) .. " data again"})
+									_G.tags.FS[FS_driver].data[FS_index].known_data = true
+								end
+								
+								_G.tags.all_max_storage[_G.tags.FS[FS_driver].data[FS_index].fluid_type] = _G.tags.all_max_storage[_G.tags.FS[FS_driver].data[FS_index].fluid_type] or 0 + _G.tags.FS[FS_driver].data[FS_index].max_fluid
+								_G.tags.all_storage[_G.tags.FS[FS_driver].data[FS_index].fluid_type] = _G.tags.all_storage[_G.tags.FS[FS_driver].data[FS_index].fluid_type] or 0 + _G.tags.FS[FS_driver].data[FS_index].fluid
+							elseif _G.tags.FS[FS_driver].data[FS_index].known_data ~= false then
+								log.buffer.add({5, "Get FS (" .. FS_driver .. ") #" .. tostring(FS_index) .. " Data Error: " .. (result or "Unkown")})
+								_G.tags.FS[FS_driver].data[FS_index].known_data = false
+								
+								if result == "no such component" then
+									log.buffer.add({4, "FS informational line hasn't signal"})
+								end
+							end
 						end
 					end
 				end
 			elseif _G.config.mode == 2 then
-				all_storage = 0
-				all_max_storage = 0
+				_G.tags.all_storage = 0
+				_G.tags.all_max_storage = 0
 				for ES_driver in pairs(_G.drivers.ES) do
-					ES_count = #_G.tags.ES[ES_driver].elements
-					if ES_count > 0 then
-						for ES_index = 1, ES_count do
-							_G.drivers.ES[ES_driver].get_data(ES_index)
-							all_max_storage = all_max_storage + _G.tags.ES[ES_driver].data[ES_index].max_power
-							all_storage = all_storage + _G.tags.ES[ES_driver].data[ES_index].power
+					if _G.tags.ES[ES_driver].elements.n > 0 then
+						for ES_index = 1, _G.tags.ES[ES_driver].elements.n do
+							local ok, result = pcall(_G.drivers.ES[ES_driver].get_data, ES_index)
+							if ok then
+								if _G.tags.ES[ES_driver].data[ES_index].known_data == false then
+									log.buffer.add({2, "We have ES (" .. ES_driver .. ") #" .. tostring(ES_index) .. " data again"})
+									_G.tags.ES[ES_driver].data[ES_index].known_data = true
+								end
+								
+								_G.tags.all_max_storage = _G.tags.all_max_storage + _G.tags.ES[ES_driver].data[ES_index].max_power
+								_G.tags.all_storage = _G.tags.all_storage + _G.tags.ES[ES_driver].data[ES_index].power
+							elseif _G.tags.ES[ES_driver].data[ES_index].known_data ~= false then
+								log.buffer.add({5, "Get ES (" .. ES_driver .. ") #" .. tostring(ES_index) .. " Data Error: " .. (result or "Unkown")})
+								_G.tags.ES[ES_driver].data[ES_index].known_data = false
+								
+								if result == "no such component" then
+									log.buffer.add({4, "ES informational line hasn't signal"})
+								end
+							end
 						end
 					end
 				end
@@ -166,9 +233,8 @@ local ok_main, result_main = pcall(function()
 			
 			
 			for gen_driver in pairs(_G.drivers.gen) do
-				elements_count = #_G.tags.gen[gen_driver].elements
-				if elements_count > 0 then
-					for gen_index = 1, elements_count do
+				if _G.tags.gen[gen_driver].elements.n > 0 then
+					for gen_index = 1, _G.tags.gen[gen_driver].elements.n do
 						local ok, result = pcall(_G.drivers.gen[gen_driver].get_data, gen_index)
 						if not ok then
 							if _G.tags.gen[gen_driver].data[gen_index].known_data ~= false then
@@ -190,46 +256,54 @@ local ok_main, result_main = pcall(function()
 							end
 						else
 							if _G.tags.gen[gen_driver].data[gen_index].known_data == false then
-								log.buffer.add({2, "We have generator (" .. gen_driver .. ") #" .. tostring(gen_index) .. " informational line again"})
+								log.buffer.add({2, "We have generator (" .. gen_driver .. ") #" .. tostring(gen_index) .. " data again"})
+								_G.tags.gen[gen_driver].data[gen_index].known_data = true
 							end
-							
-							_G.tags.gen[gen_driver].data[gen_index].known_data = true
 							
 							if _G.tags.state == "E" or _G.tags.gen[gen_driver].data[gen_index].state == "E" then
 								if _G.tags.gen[gen_driver].data[gen_index].working then
-									_G.drivers.gen[gen_driver].stop(gen_index)
-									log.buffer.add({3, "Generator (" .. gen_driver .. ") #" .. tostring(gen_index) .. " has been manually started, but mode now is Emergency. We E-Stopped the gen"})
+									local ok, result = pcall(_G.drivers.gen[gen_driver].stop, gen_index)
+									log.buffer.add({
+										ok and 3 or 5,
+										"Generator (" .. gen_driver .. ") #" .. tostring(gen_index) .. " has been manually started, but mode now is Emergency. E-Stop the gen is "
+											.. (ok and "successfully" or ("unsuccessfully. Error: " .. result))
+									})
 								end
-								_G.tags.gen[gen_driver].data[gen_index].state = "S"
 							else
 								-- Generator State
-								if _G.tags.gen[gen_driver].data[gen_index].state == nil then
-									_G.reset_gen_state(gen_driver, gen_index)
-								elseif _G.tags.gen[gen_driver].data[gen_index].working == true and _G.tags.gen[gen_driver].data[gen_index].state == "S" then
+								if _G.tags.gen[gen_driver].data[gen_index].working == true and _G.tags.gen[gen_driver].data[gen_index].state == "S" then
 									log.buffer.add({4, "Generator (" .. gen_driver .. ") #" .. tostring(gen_index) .. " state set to E"})
 									log.buffer.add({1, "GENERATOR DATA\n  working: " .. tostring(_G.tags.gen[gen_driver].data[gen_index].working) .. "\n  state (was): " .. (_G.tags.gen[gen_driver].data[gen_index].state or "unkown")})
 									_G.tags.gen[gen_driver].data[gen_index].state = "E"
 									table.insert(gens_in_E_state, {gen_driver, gen_index})
+									
+									pcall(_G.drivers.gen[gen_driver].stop, gen_index)
 								end
 								
 								if _G.tags.gen[gen_driver].data[gen_index].state ~= "M" and _G.tags.state ~= "M" then
 									-- PID Mode
 									mode = _G.tags.gen[gen_driver].data[gen_index].mode or _G.config.mode
 									if mode == 1 then
-										all_storage_for_gen = all_storage[_G.tags.gen[gen_driver].data[gen_index].fluid_type]
-										all_max_storage_for_gen = all_max_storage[_G.tags.gen[gen_driver].data[gen_index].fluid_type]
+										all_storage_for_gen = _G.tags.all_storage[_G.tags.gen[gen_driver].data[gen_index].fluid_type]
+										all_max_storage_for_gen = _G.tags.all_max_storage[_G.tags.gen[gen_driver].data[gen_index].fluid_type]
 									elseif mode == 2 then
-										all_storage_for_gen = all_storage
-										all_max_storage_for_gen = all_max_storage
+										all_storage_for_gen = _G.tags.all_storage
+										all_max_storage_for_gen = _G.tags.all_max_storage
 									end
 									
 									-- PID
 									ok, result = pcall(_G.modules.pid.control[mode], gen_driver, gen_index, all_storage_for_gen, all_max_storage_for_gen)
 									if not ok then
 										log.buffer.add({5, "PID Error: " .. result})
+										_G.tags.gen[gen_driver].data[gen_index].state = "E"
+										
 										if _G.tags.gen[gen_driver].data[gen_index].working then
-											stop_gen(gen_driver, gen_index)
-											log.buffer.add({4, "E-STOP Gen (" .. gen_driver .. ") #" .. tostring(gen_index)})
+											local ok = pcall(stop_gen, gen_driver, gen_index)
+											log.buffer.add({
+												ok and 4 or 5,
+												"E-STOP Gen (" .. gen_driver .. ") #" .. tostring(gen_index) .. " is "
+													.. (ok and "" or "un") .. "successfully"
+											})
 										end
 									end
 								end
@@ -238,6 +312,7 @@ local ok_main, result_main = pcall(function()
 					end
 				end
 			end
+			
 			log.buffer.push()
 		end
 		
@@ -247,7 +322,11 @@ end)
 
 log.buffer.add({4, "!!! PANIC !!!\n   We exited from main cycle"})
 pcall(log.buffer.push)
-_G.stop_all_gens()
+local ok, result = pcall(_G.stop_all_gens)
+if not ok then
+	pcall(log, {5, "E-STOP all gens is unsuccessfully"})
+end
+
 if not ok_main then
 	error(result_main)
 end

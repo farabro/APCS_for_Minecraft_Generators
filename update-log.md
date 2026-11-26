@@ -20,5 +20,6 @@
 - Now, Documentation has version in English lang
 - Now, you can press key, that in English QWERTY has need value (if you press "У" APCS will understand it how "E")
 - Calls to get gen/ES/FS data has been optimized
+- Fault tolerance has been significantly increased
 
-Count of Cup Coffee has been drunk: 14
+Count of Cup Coffee has been drunk: 16

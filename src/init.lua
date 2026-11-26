@@ -134,10 +134,10 @@ local ok, result = pcall(function()
 	end
 	
 	_G.tags.state = "O"
-	_G.log.buffer.add({2, "Successfully startup"})
+	_G.log.buffer.add({2, "Successfully Initialization. APCS state: Operational (O)"})
 	_G.log.buffer.add({
 		1,
-		"Startup data"
+		"Initialization data"
 			.. "\n  Free RAM " .. tostring(computer.freeMemory() // 1024) .. " / " .. tostring(computer.totalMemory() // 1024) .. " Kb"
 	})
 	_G.log.buffer.push()
