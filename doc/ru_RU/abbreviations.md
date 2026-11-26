@@ -1,7 +1,5 @@
 **APCS** -- Automated Process Control System / АСУ
 
-**АСУ** -- Автоматизированная Система Управления / APCS
-
 **CCGT** -- Combined Cycle Gas Turbine / Газовая Турбина Комбинированного Цикла
 
 **ПОС** -- Положительная Обратная Связь
@@ -12,13 +10,19 @@
 
 **FS** -- Fluid Storage
 
+**BSoD** -- Blue Screen of Death. Стандартный экран неисправимой ошибки в OpenComp.
+
 **NTM** -- Nuclear Tech Mod: Мод Minecraft
 
 **OpenComp** -- OpenComputers: Мод Minecraft
 
 **su** -- super user
 
+**ID** -- identifier
+
 **gen (-s)** -- generator (-s)
+
+**lang** -- language
 
 **ext** -- extension
 
@@ -26,7 +30,13 @@
 
 **func** -- function
 
+**var** -- variable
+
+**addr** -- address
+
 **min** -- minimum
 
 **max** -- maximum
+
+**lvl** -- Уровень
 
